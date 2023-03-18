@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Offline for Maintenance</title>
+    <script>
+      function setMaintenanceMessage() {
+        var queryString = window.location.search;
+        var urlParams = new URLSearchParams(queryString);
+        var maintenanceTime = urlParams.get('time');
+        let maintenanceMessage = '';
+
+        if (maintenanceTime) {
+          var str = maintenanceTime.replaceAll('_', ' ')
+          maintenanceMessage = `メンテナンスは${str}まで続きます。<br>
+                              Maintenance will last until ${str}.`;
+        } else {
+          maintenanceMessage = `メンテナンス終了予定日時は未定です。<br>
+                              The scheduled maintenance end time is currently unknown.`;
+        }
+
+        document.getElementById('maintenanceMessage').innerHTML = maintenanceMessage;
+      }
+      window.addEventListener('load', setMaintenanceMessage)
+    </script>
+    <style>
+        html, body {
+            height: 100%;
+        }
+        * {
+            line-height: 1.7;
+        }
+        .wrapper {
+            text-align: center;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100%;
+            flex-direction: column;
+        }
+        .title {
+            font-size: 20px;
+            font-weight: bold;
+            line-height: 1.7;
+        }
+        canvas {
+            position: fixed;
+        }
+    </style>
+
+    <script>
+      function randomColor(i) {
+        var colors = ['rgba(128, 0, 128, 0.2)', 'rgba(0,190,152,0.18)', 'rgba(190,101,0,0.18)'];
+
+        return colors[i % colors.length];
+      }
+
+      window.addEventListener('resize', function (){
+        var canvas = document.getElementById('canvas');
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+      });
+
+      window.addEventListener('load', function() {
+        var canvas = document.getElementById('canvas');
+        var ctx = canvas.getContext('2d');
+
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+
+        var particles = [];
+
+        class Particle {
+          constructor(x, y) {
+            this.x = x;
+            this.y = y;
+            this.size = Math.random() * 50 + 1;
+            this.speedX = Math.random() * 3 - 1.5;
+            this.speedY = Math.random() * 3 - 1.5;
+            this.id = Math.floor(Math.random() * 100)
+          }
+
+          update() {
+            this.x += this.speedX;
+            this.y += this.speedY;
+
+            if (this.size > 0.2) this.size -= 0.1;
+          }
+
+          draw() {
+            ctx.fillStyle = randomColor(this.id);
+            ctx.strokeStyle = 'rgba(128, 0, 128, 0)';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+            ctx.closePath();
+            ctx.fill();
+            ctx.stroke();
+          }
+        }
+
+        function createParticles(e) {
+          if (Math.random() < 0.8) {
+            return;
+          }
+          var xPos = e.x;
+          var yPos = e.y;
+
+          for (let i = 0; i < 5; i++) {
+            particles.push(new Particle(xPos, yPos));
+          }
+        }
+
+        function animateParticles() {
+          ctx.clearRect(0, 0, canvas.width, canvas.height);
+          for (let i = 0; i < particles.length; i++) {
+            particles[i].update();
+            particles[i].draw();
+
+            if (particles[i].size <= 0.2) {
+              particles.splice(i, 1);
+              i--;
+            }
+          }
+
+          requestAnimationFrame(animateParticles);
+        }
+
+        canvas.addEventListener('mousemove', createParticles);
+        animateParticles();
+      })
+    </script>
+</head>
+
+<body>
+<canvas id="canvas"></canvas>
+<div class="wrapper">
+    <h1 class="title">メンテナンス中 | Under Maintenance</h1>
+    <p id="maintenanceMessage" style="font-size: 1.2em;"></p>
+    <p>ご迷惑をおかけし申し訳ありません。現在、メンテナンス作業中です。<br>
+        We apologize for inconvenience. The system is currently under maintenance.</p>
+</div>
+</body>
+</html>
