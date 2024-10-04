@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Offline for Maintenance</title>
+    <script>
+      function setMaintenanceMessage() {
+        var queryString = window.location.search;
+        var urlParams = new URLSearchParams(queryString);
+        var message = urlParams.get('message');
+
+        if (message) {
+            document.getElementById('maintenanceMessage').innerText = message;
+        }
+      }
+      window.addEventListener('load', setMaintenanceMessage)
+    </script>
+    <style>
+        html, body {
+            height: 100%;
+        }
+        * {
+            line-height: 1.7;
+        }
+        .wrapper {
+            text-align: center;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100%;
+            flex-direction: column;
+        }
+        .title {
+            font-size: 20px;
+            font-weight: bold;
+            line-height: 1.7;
+        }
+        canvas {
+            position: fixed;
+        }
+    </style>
+
+    <script>
+        function randomColor() {
+            var colors = [
+                '#FF6B6Ba0', '#4ECDC4a0', '#45B7D1a0',
+                '#FFA07A50', '#98D8C850', '#F6728050'
+            ];
+            return colors[Math.floor(Math.random() * colors.length)];
+        }
+
+        window.addEventListener('resize', function (){
+            var canvas = document.getElementById('canvas');
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        });
+
+        window.addEventListener('load', function() {
+            var canvas = document.getElementById('canvas');
+            var ctx = canvas.getContext('2d');
+
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+
+            var particles = [];
+
+            class Particle {
+                constructor(x, y) {
+                    this.x = x;
+                    this.y = y;
+                    this.size = Math.random() * 30 + 10;
+                    this.speedX = Math.random() * 3 - 1.5;
+                    this.speedY = Math.random() * 3 - 1.5;
+                    this.color = randomColor();
+                    this.opacity = 1;
+                    this.rotation = Math.random() * Math.PI * 2;
+                    this.rotationSpeed = (Math.random() - 0.5) * 0.1;
+                    this.life = 100; // パーティクルの寿命を設定
+                }
+
+                update() {
+                    this.x += this.speedX;
+                    this.y += this.speedY;
+                    this.rotation += this.rotationSpeed;
+
+                    this.life -= 1;
+                    this.opacity = this.life / 100; // 寿命に基づいて不透明度を設定
+
+                    if (this.size > 0.2) this.size -= 0.1;
+                }
+
+                draw() {
+                    ctx.save();
+                    ctx.translate(this.x, this.y);
+                    ctx.rotate(this.rotation);
+                    ctx.fillStyle = this.color;
+                    ctx.globalAlpha = this.opacity;
+                    ctx.fillRect(-this.size / 2, -this.size / 2, this.size, this.size);
+                    ctx.restore();
+                }
+            }
+
+            function createParticles(e) {
+                var xPos = e.x;
+                var yPos = e.y;
+
+                for (let i = 0; i < 5; i++) {
+                    particles.push(new Particle(xPos, yPos));
+                }
+            }
+
+            function animateParticles() {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                for (let i = 0; i < particles.length; i++) {
+                    particles[i].update();
+                    particles[i].draw();
+
+                    if (particles[i].life <= 0) {
+                        particles.splice(i, 1);
+                        i--;
+                    }
+                }
+
+                requestAnimationFrame(animateParticles);
+            }
+
+            canvas.addEventListener('mousemove', createParticles);
+            animateParticles();
+        })
+    </script>
+</head>
+
+<body>
+<canvas id="canvas"></canvas>
+<div class="wrapper">
+    <h1 class="title">開催終了 | System Closed</h1>
+    <p id="maintenanceMessage" style="font-size: 1.2em;"></p>
+    <p>開催は終了しました。ご利用ありがとうございました。<br>
+    The event has ended. Thank you for your participation.</p>
+</div>
+</body>
+</html>
